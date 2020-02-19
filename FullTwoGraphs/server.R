@@ -32,7 +32,7 @@ server <- function(input, output) {
         p <- input$p        #percentage of dead bugs the dogs consume
         k <- input$k        # probabilty of transmission  bug to dog, oral, oral transmission 
         d <- input$d        # day to implement treatment
-        variable <- input#variable
+       # variable <- input#variable
         
         
         
@@ -51,6 +51,15 @@ server <- function(input, output) {
         times2 <- seq(0, 20000, by = 1)
         signal <- data.frame(times = times2, import = rep(0, length(times2)))
         
+        #Create vector of days from input
+        vector_trt = c()
+        if (input$number_treatments>0) {
+            vector_trt = (1:input$number_treatments-1)*input$days_between_treatments}
+        days_vector =  c()
+        if (input$number_treatments>0) { 
+            days_vector = input$start_day+vector_trt}
+          
+        
         #Function for creating the dataframe of bugs killed vs days post treatment depending on user input, d
         trt2.function <- function(fit2, trt.days, signal) {
             Asym<-summary(fit2)$parameters[1,1]
@@ -64,11 +73,9 @@ server <- function(input, output) {
             return(signal)
         }
         
-        #Input number of days and times to implement treament  ***WANT TO TURN THIS INTO A USER DEFINE VECTOR
-    #    trt.days <- textInput(variable)
-        trt.days <-
-        #        trt.days <- c(d) 
-        day <-trt2.function(fit2, trt.days, signal)
+        #Input number of days and times to implement treament
+
+        day <-trt2.function(fit2, days_vector, signal)
         
         
         input <- approxfun(day, rule = 2)
@@ -103,9 +110,11 @@ server <- function(input, output) {
         
         ###### Plot the output
         matplot(times/365, RESULTS, type = "l", xlab = "Time", ylab = "Proportion (X,Y)", main = "Model with day to implement treatment", lwd = 1, lty = 1, bty = "l", col = c("black","red"))
-        legend("topright", c("Dogs", "Triatomines"), pch = 1, col = c("black","red"))
+        legend("bottomright", c("Dogs", "Triatomines"), pch = 1, col = c("black","red"))
         
     })
+    
+    ##FUNCTION FOR PLOT OF BUGS AND POSTIVE BUGS- Plots not working
     output$distPlot2 <- renderPlot({
         
         # Set parameter values
@@ -140,6 +149,15 @@ server <- function(input, output) {
         times2 <- seq(0, 20000, by = 1)
         signal <- data.frame(times = times2, import = rep(0, length(times2)))
         
+        #Create vector of days from input
+        vector_trt = c()
+        if (input$number_treatments>0) {
+            vector_trt = (1:input$number_treatments-1)*input$days_between_treatments}
+        days_vector =  c()
+        if (input$number_treatments>0) { 
+            days_vector = input$start_day+vector_trt}
+        
+        
         #Function for creating the dataframe of bugs killed vs days post treatment depending on user input, d
         trt2.function <- function(fit2, trt.days, signal) {
             Asym<-summary(fit2)$parameters[1,1]
@@ -153,9 +171,9 @@ server <- function(input, output) {
             return(signal)
         }
         
-        #Input number of days and times to implement treament  ***WANT TO TURN THIS INTO A USER DEFINE VECTOR
-        trt.days <- c(d) 
-        day <-trt2.function(fit2, trt.days, signal)
+        #Input number of days and times to implement treament
+        
+        day <-trt2.function(fit2, days_vector, signal)
         
         
         input <- approxfun(day, rule = 2)
@@ -191,7 +209,7 @@ server <- function(input, output) {
         
         ###### Plot the output
         matplot(times/365, RESULTS2, type = "l", xlab = "Time", ylab = "# Bugs", main = "Model with tx, bugs:dogs", lwd = 1, lty = 1, bty = "l", col = c("black","red"))
-        legend("topright", c("Bugs:dogs", "Infected bugs:dogs"), pch = 1, col = c("blue","orange"))
+        legend("bottomright", c("Bugs:dogs", "Infected bugs:dogs"), pch = 1, col = c("blue","orange"))
         
     })
     

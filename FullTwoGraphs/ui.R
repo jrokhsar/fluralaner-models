@@ -59,8 +59,15 @@ ui <- fluidPage(
             sliderInput(inputId = "d",
                         label = "Day to implement treatment",
                         min = 8000, max = 19000, value = 10000),
-            textInput(inputId = "j",
-                        label = "Day to implement treatment")
+            numericInput(inputId = "start_day",
+                        label = "Day to implement treatment",
+                        min = 10000, 10000),
+            numericInput(inputId = "number_treatments",
+                         label = "Number of treatments",
+                         value = 1),
+           numericInput(inputId = "days_between_treatments",
+                        label = "Days between treatments",
+                         value=90),
             
             
         ),
@@ -71,7 +78,7 @@ ui <- fluidPage(
             
             # Output: Proportions infected (Dogs and Bugs) ----
             plotOutput(outputId = "distPlot1"),
-            plotOutput(outputId = "distPlot2"),
+          #  plotOutput(outputId = "distPlot2"),  #Commented this out bc there's a bug in this graph- population crashes
             
         )
     )
