@@ -35,7 +35,7 @@ RM <- function(time, state, parameters)
 #=============================================
 
 init <- c(X = 0.01, Y = 0, m= 40)
-parameters <- c(a=1/14, b=0.00068, m=40, n=45, g=0.005, c=0.28, r=1/(3*365), K = 40, R= 0.09)
+parameters <- c(a=1/14, b=0.00068, n=45, g=0.01, c=0.28, r=1/(3*365), K = 40, R= 0.09)
 times <- seq(0, 20000, by = 1)
 out <- as.data.frame(ode(y = init, times = times, func = RM, parms = parameters))
 RESULTS<-data.frame(out$X,out$Y)
@@ -49,7 +49,7 @@ legend(8000, .4, c("Dogs", "Triatomines"), pch = 1, col = c("black","red"))
 #=============================================
 tail(RESULTS)
 #       out.X     out.Y
-#20001 0.5368288 0.5448028
+#20001 0.3634649 0.2684017
 
 
 #=============================================
@@ -66,12 +66,12 @@ getEq<-function(a, b, m, n, g, c, r)
   return(c(R0, Xeq, Yeq))
 }
 
-RMequil <- getEq(a=1/14, b=.00068, m=40, n=45, g=.005, c=.28, r=1/(3*365))
+RMequil <- getEq(a=1/14, b=.00068, m=40, n=45, g=.01, c=.28, r=1/(3*365))
 
 Xeq <- RMequil[2]
-# 0.5368288
+#0.1599438
 Yeq <- RMequil[3]
-# 0.5448028
+# 0.2684018
 
 
 #==========================================================================
@@ -190,7 +190,7 @@ RMTx2 <- function(times, stateTx2, parametersTx2)
 #=============================================
 
 initTx2 <- c(X = Xeq, Y= Yeq, m=40) 
-parametersTx2 <- c(a=1/14, b=0.00068, n=45, g=0.005, c=0.28, k=.10, r= 1/(3*365), p=0.8, K=40, R= 0.09)
+parametersTx2 <- c(a=1/14, b=0.00068, n=45, g=0.01, c=0.28, k=.10, r= 1/(3*365), p=0.8, K=40, R= 0.09)
 outTx2 <- as.data.frame(ode(y = initTx2, times = times, func = RMTx2, parms = parametersTx2))
 RESULTS2 <- data.frame(outTx2$X, outTx2$Y)
 #times <- seq(0, 10000, by = 1)

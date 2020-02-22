@@ -1,0 +1,12 @@
+name: ExternalPop
+title: ExternalPop
+username:
+account: jrokh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1849084
+bundleId: 2820680
+url: https://jrokh.shinyapps.io/ExternalPop/
+when: 1582409729.28913
+asMultiple: FALSE
+asStatic: FALSE
