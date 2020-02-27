@@ -64,6 +64,9 @@ ui <- fluidPage(
             sliderInput(inputId = "k",
                         label = "Transmission efficiency from bug to dog, oral transmission",
                         min = 0.05, max = 0.12, value = 0.1),
+            selectInput("select", label = h3("Chose resistant or susceptible"), choices = list(
+                "5th stage susceptible nymphs", "5th stage resistant nymphs")),
+            hr()
             
            # selectInput("select", label = h3("Select resistant/susceptible"), choices = list(
             #    "5th stage susceptible nymphs"=1, "5th stage resistant nymphs"=2)),

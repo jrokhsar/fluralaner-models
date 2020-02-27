@@ -42,16 +42,16 @@ server <- function(input, output) {
         y <- c(0.99, 1.0, 1.0, 0.47, 0.49, 0, 0)  #% killed
         z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0) #% killed
 
-        fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
+        #fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
         
         #Option to choice susceptible or resistant commented out because not loading in the app
-        #if (input$select == "fifth stage resistant nymphs"){
-        #    fit2 <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, y))
-       # }
+        if (input$select == "5th stage resistant nymphs"){
+            fit2 <- nls(y ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, y))
+        }
         
-        #if(input$select == "fifth stage susceptible nymphs"){
-        #    fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
-        #}
+        if(input$select == "5th stage susceptible nymphs"){
+            fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
+        }
 
 
         times2 <- seq(0, 20000, by = 1)
