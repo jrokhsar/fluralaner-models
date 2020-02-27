@@ -112,7 +112,9 @@ server <- function(input, output) {
         
         ###### Plot the output
         matplot(times/365, RESULTS, type = "l", xlab = "Time (years)", ylab = "% Infected", main = "Proportions Infected", lwd = 2, lty = 1, bty = "l", col = c("blue","red"))
+        abline(v=c(days_vector/365), col="green", lty=2)
         legend("bottomright", c("Dogs", "Bugs"), pch = 1, col = c("blue","red"))
+        
         
     })
     
@@ -220,6 +222,7 @@ server <- function(input, output) {
         
         ###### Plot the output
         matplot(times/365, RESULTS, type = "l", xlab = "Time (years)", ylab = "Number per dog", main = " Ratio Bugs and Infected Bugs", lwd = 2, lty = 1, bty = "l", col = c("blue","red"))
+        abline(v=c(days_vector/365), col="green", lty=2)
         legend("bottomright", c("Bugs per Dog", "Infected Bug per Dog"), pch = 1, col = c("blue","red"))
         
     })
