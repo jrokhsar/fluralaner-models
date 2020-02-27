@@ -81,7 +81,9 @@ legend(8000, .4, c("Bugs:Dogs"), pch = 1, col = c("green"))
 #Initial vectors for days post treatment, % killed
 x <- c(4, 30, 60, 90, 120, 210, 360) #days post treatment
 y <- c(0.99, 1.0, 1.0, 0.47, 0.49, 0, 0)  #% killed
-z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0) #% killed
+z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0)#% killed
+
+
 plot(z ~ x)
 fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
 summary(fit2)
@@ -114,7 +116,7 @@ trt2.function <- function(fit2, trt.days, signal) {
 }
 
 #Input number of days and times to implement treament
-trt.days <- c(10000) 
+trt.days <- c() 
 trt.effect <-trt2.function(fit2, trt.days, signal)
 input <- approxfun(trt.effect, rule = 2)
 
@@ -150,8 +152,8 @@ RMTx2 <- function(times, stateTx2, parametersTx2)
     {
       z <- input(times)
       dX <- (((m+MM)*a*b*Y)+(p*k*(a*m*z*Y)))*(1-X)-r*X 
-      #dY <- a*c*X*(m+MM)*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y)) #Density dependent death for bugs
-     dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y)) #No density dependent death for bugs
+      #dY <- a*c*X*(m+MM)*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y))  #Density dependent death for bugs
+      dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))#+(MM*a*c*X*(exp(-g*n)-Y)) #No density dependent death for bugs
       dm <- ((R*(1-(m+MM)/K)*(m+MM))+(-m*a*z))
       return(list(c(dX, dY, dm)))
     }
@@ -163,7 +165,7 @@ RMTx2 <- function(times, stateTx2, parametersTx2)
 #=============================================
 
 initTx2 <- c(X = 0.01, Y= 0, m=30) 
-parametersTx2 <- c(a=1/14, b=0.00068, n=45, g= 0.005, c=0.28, k= 0.10, r= 1/(3*365), p=0.9, K=50, R= 0.09, MM=20)
+parametersTx2 <- c(a=1/14, b=0.00068, n=45, g= 0.005, c=0.28, k= 0.10, r= 1/(3*365), p=0.9, K=50, R= 0.09, MM=0)
 outTx2 <- as.data.frame(ode(y = initTx2, times = times, func = RMTx2, parms = parametersTx2))
 RESULTS2<-data.frame(outTx2$X,outTx2$Y)
 RESULTS2m <-data.frame(outTx2$m, outTx2$Y*outTx2$Y)
@@ -194,7 +196,7 @@ abline(v=c(10000/365, 10084/365, 10168/365, 10252/365), col="green", lty=2, lwd=
 #=============================================
 
 #========Proportion dogs and bugs infected===
-matplot(times/365, RESULTS2, type = "l", xlab = "Time (Years)", ylab = "Proportion Infected (%)", main = " Infecated, One Treatment per Year for 
+matplot(times/365, RESULTS2, type = "l", xlab = "Time (Years)", ylab = "Proportion Infected (%)", main = " No external pop and  density depent death per Year for 
         3 Years", lwd = 2, lty = 1, bty = "l", col = c("blue","red"))
         #xlim=c(9850/365,11600/365))
 legend(11100/365, 0.2, c("Dogs", "Triatomines", "Treatment Time"), pch = 16, col = c("blue","red", "green"), bty = "n")

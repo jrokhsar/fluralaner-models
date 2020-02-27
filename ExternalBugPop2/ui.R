@@ -13,7 +13,7 @@ library(deSolve)
 ui <- fluidPage(
     
     # App title ----
-    titlePanel("Chagas Model with Treatment"),
+    titlePanel("Parameters"),
     
     # Sidebar layout with input and output definitions ----
     sidebarLayout(
@@ -79,7 +79,7 @@ ui <- fluidPage(
             
             # Output: Proportions infected (Dogs and Bugs) ----
             plotOutput(outputId = "distPlot1"),
-            #  plotOutput(outputId = "distPlot2"),  #Commented this out bc there's a bug in this graph- population crashes
+            plotOutput(outputId = "distPlot2"),  #Commented this out bc there's a bug in this graph- population crashes
             
         )
     )
