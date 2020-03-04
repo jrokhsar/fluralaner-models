@@ -70,39 +70,65 @@ legend(8000, .4, c("Bugs:Dogs"), pch = 1, col = c("green"))
 
 #=============================================
 #   estimate parameter z, percent of bugs that die after feeding on treated dogs, from data in Laino et al. 2019 https://www.ncbi.nlm.nih.gov/pubmed/30981313
-#	 	x = days post fluralaner treatment
-#		y = percentage of bugs that died after feeding on treated dogs (5th stage pyrethroid resistant instars) NOT USED
-#		z = percentage of bugs that died after feeding on treated dogs (5th stage suceptible instars) USED 
+#	 	   -x = days post fluralaner treatment
+#		   -y = percentage of bugs that died after feeding on treated dogs (5th stage pyrethroid resistant instars) NOT USED
+#	     -z = percentage of bugs that died after feeding on treated dogs (5th stage suceptible instars) USED
+#      -fit data with log curve
+#      -fit2- store fitted values, plot to check fit
 #=============================================
 
 
 #Initial vectors for days post treatment, % killed
 x <- c(4, 30, 60, 90, 120, 210, 360) #days post treatment
 y <- c(0.99, 1.0, 1.0, 0.47, 0.49, 0, 0)  #% killed
-z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0) #% killed
-
+z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0)#% killed
 
 
 plot(z ~ x)
-
-
-#=============================================
-#  fit data with logistic curve
-#       -using % dead 5th stage suceptible bugs against days post fluralaner tx
-# 		-fit2 stores fitted values
-#		-plot to check fit
-#		-extract fit values using equation y = Asym / (1 + exp((xmid - input) / scal))
-#=============================================
 fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
 summary(fit2)
 
 lines(seq(0, 400, length.out = 400),
       predict(fit2, newdata = data.frame(x = seq(0.5, 400, length.out = 400))))
 
-Asym<-summary(fit2)$parameters[1,1]
-xmid<-summary(fit2)$parameters[2,1]
-scal<-summary(fit2)$parameters[3,1]
+times <- seq(0, 20000, by = 1)
+signal <- data.frame(times = times, import = rep(0, length(times)))
 
+
+#=============================================
+#   trt2.function: function to get the effect of tx based on 1) days of treatment 
+#             2) number of tx's 3) extract fit values using equation y = Asym / (1 + exp((xmid - input) / scal))
+#   Input vector of tx days into function
+#     -Store corresponding dataframe in trt.effect
+#   Force time dependent covariate into model
+#=============================================
+
+trt2.function <- function(fit2, trt.days, signal) {
+  Asym<-summary(fit2)$parameters[1,1]
+  xmid<-summary(fit2)$parameters[2,1]
+  scal<-summary(fit2)$parameters[3,1]
+  trt.start <- trt.days
+  trt.end <- c(trt.start + 400)
+  trt.segments <- unlist(Map(':', trt.start, trt.end))
+  time.segments <- rep(0:401, times=length(trt.start)) 
+  signal$import[trt.segments] = (Asym / (1 + exp((xmid - times[time.segments]) / scal)))  
+  return(signal)
+}
+
+#Input number of days and times to implement treament
+trt.days <- c(10000) 
+
+#trt.days <- c(10000, 10365, 10730, 11095)
+#trt.days <- c(10000, 10090, 10180, 10270, 10365)
+
+trt.effect <-trt2.function(fit2, trt.days, signal)
+input <- approxfun(trt.effect, rule = 2)
+
+#======================================================================
+#  I. Model II: Pretreatment model merged with tx model
+#    -Treatment implemented as a result of trt2.function 
+#    -z: percentage of bugs killed after feeding on tx'd dogs
+#======================================================================
 
 #=============================================
 #     Parameters
@@ -120,44 +146,7 @@ scal<-summary(fit2)$parameters[3,1]
 #   p is probability dog eats the bug (to be varied)
 #   R is maximum birthrate (estimate from T. brasiliensis)
 #   K is carrying capacity of vectors per dog
-#=============================================
-
-
-#=============================================
-#   force the time dependent covariate 
-#       z is the probability of death from Fluralaner per bite
-#       jr added code to apply more than one treatment
-#       jr added function for implementing treatments at different times
-#=============================================
-
-times <- seq(0, 20000, by = 1)
-signal <- data.frame(times = times, import = rep(0, length(times)))
-
-
-trt2.function <- function(fit2, trt.days, signal) {
-  Asym<-summary(fit2)$parameters[1,1]
-  xmid<-summary(fit2)$parameters[2,1]
-  scal<-summary(fit2)$parameters[3,1]
-  trt.start <- trt.days
-  trt.end <- c(trt.start + 400)
-  trt.segments <- unlist(Map(':', trt.start, trt.end))
-  time.segments <- rep(0:401, times=length(trt.start)) 
-  signal$import[trt.segments] = (Asym / (1 + exp((xmid - times[time.segments]) / scal)))  
-  return(signal)
-}
-
-#Input number of days and times to implement treament
-trt.days <- c(10000) 
-out <-trt2.function(fit2, trt.days, signal)
-
-
-input <- approxfun(out, rule = 2)
-
-
-#=============================================
-#   model importing z from the above
-#      -jr added in an external source of bugs not affected by tx MM
-#         
+#   MM is external bug population not affected by treatment
 #=============================================
 
 RMTx2 <- function(times, stateTx2, parametersTx2)   
@@ -166,9 +155,10 @@ RMTx2 <- function(times, stateTx2, parametersTx2)
     as.list(c(stateTx2, parametersTx2)), 
     {
       z <- input(times)
-      dX <- (((m+MM)*a*b*Y)+(p*k*(a*m*z*Y)))*(1-X)-r*X 
-      dY <- a*c*X*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y))
-      dm <- ((R*(1-(m+MM)/K)*(m+MM))+(-m*a*z))
+      dX <- ((m*a*b*Y)+(p*k*(a*m*z*Y)))*(1-X)-r*X 
+      #dY <- a*c*X*(m+MM)*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y))  #Density dependent death for bugs
+      dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))
+      dm <- (R*(1-m/K)*m)+(-m*a*z)
       return(list(c(dX, dY, dm)))
     }
   )
@@ -176,17 +166,13 @@ RMTx2 <- function(times, stateTx2, parametersTx2)
 
 #=============================================
 #  Run the model
-#   -proportion of infected dogs (X) and bugs (Y) are taken from the proportions at the equilibrium of the model pre-treatment
-#   -in 
 #=============================================
 
-initTx2 <- c(X = 0.01, Y= 0, m=35) 
-parametersTx2 <- c(a=1/14, b=0.00068, n=45, g= 0.005, c=0.28, k= 0.10, r= 1/(3*365), p=0.8, K=35, R= 0.09, MM=20)
+initTx2 <- c(X = 0.01, Y= 0, m=40) 
+parametersTx2 <- c(a=1/14, b=0.00068, n=45, g= 0.005, c=0.28, k= 0.10, r= 1/(3*365), p=0.8, K=40, R= 0.09)
 outTx2 <- as.data.frame(ode(y = initTx2, times = times, func = RMTx2, parms = parametersTx2))
 RESULTS2<-data.frame(outTx2$X,outTx2$Y)
 RESULTS2m <-data.frame(outTx2$m, outTx2$Y*outTx2$Y)
-#timesTx2 <- seq(0, 10000, by = 1)
-
 
 #=============================================
 #   Plot Results
@@ -195,7 +181,7 @@ RESULTS2m <-data.frame(outTx2$m, outTx2$Y*outTx2$Y)
 #   Y*m   Positive Bugs Per Dog
 #   Y     Bug Prevalence
 #=============================================
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 plot(outTx2$m, type='l',main='Bugs per Dog - dm', ylab = "# bugs", xlab = "Days", cex.main=0.8)
 
 plot(outTx2$Y*outTx2$m, type='l', main = 'Positive Bugs Per Dog', ylab = "# bugs", xlab = "Days", cex.main=0.8)
@@ -214,10 +200,13 @@ abline(v=c(10000/365, 10084/365, 10168/365, 10252/365), col="green", lty=2, lwd=
 #=============================================
 
 #========Proportion dogs and bugs infected===
-matplot(times/365, RESULTS2, type = "l", xlab = "Time (Years)", ylab = "Proportion Infected (%)", main = "Proportions Infected, One Treatment per Year for 3 Years", lwd = 2, lty = 1, bty = "l", col = c("blue","red"), 
-        xlim=c(9850/365,11600/365))
-legend(11100/365, 0.2, c("Dogs", "Triatomines", "Treatment Time"), pch = 16, col = c("blue","red", "green"), bty = "n")
-abline(v=c(10000/365, 10365/365, 10730/365), col="green", lty=2, lwd=2)
+matplot(times/365, RESULTS2, type = "l", xlab = "Time (Years)", ylab = "Proportion Infected (%)", main= "Treatment Once a Year for 4 Years", lwd = 3, 
+        lty = 1, bty = "l", col = c("blue","red"))
+      #  xlim=c(8800/365,13800/365))
+legend(12000/365, 0.2, c("Dogs", "Bugs", "Treatment"), pch = 16, col = c("blue","red", "green"), bty = "n")
+#abline(v=c(10000/365), col= "green", lty=2, lwd=2)
+abline(v=c(10000/365, 10365/365, 10730/365, 11095/365), col="green", lty=2, lwd=2)
+#abline(v=c(10000/365, 10090/365, 10180/365, 10270/365), col="green", lty=2, lwd=2)
 
 #========Ratio of bugs:dogs===
 matplot(times, RESULTS2m, type = "l", xlab = "Time", ylab = "Ratio bugs:dogs", main = "Pre-Tx Model, Bugs:Dogs", lwd = 1, lty = 1, bty = "l", col = "green")

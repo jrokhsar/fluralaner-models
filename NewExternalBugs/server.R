@@ -41,7 +41,7 @@ server <- function(input, output) {
         x <- c(4, 30, 60, 90, 120, 210, 360)
         y <- c(0.99, 1.0, 1.0, 0.47, 0.49, 0, 0)  #% killed
         z <- c(1.0, 0.99, 0.99, 0.79, 0.7, 0.02, 0) #% killed
-
+        
         #fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
         
         #Option to choice susceptible or resistant commented out because not loading in the app
@@ -52,8 +52,8 @@ server <- function(input, output) {
         if(input$select == "5th stage susceptible nymphs"){
             fit2 <- nls(z ~ SSlogis(x, Asym, xmid, scal), data = data.frame(x, z))
         }
-
-
+        
+        
         times2 <- seq(0, 20000, by = 1)
         signal <- data.frame(times = times2, import = rep(0, length(times2)))
         
@@ -96,10 +96,9 @@ server <- function(input, output) {
                 as.list(c(y, parameters)), 
                 {
                     z <- input(times)
-                    dX <- (((m+MM)*a*b*Y)+(p*k*(m*a*z*Y)))*(1-X)-r*X
-                    dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y))
-                    #dY <- a*c*X*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y)) 
-                    dm <- ((R*(1-(m+MM)/K)*(m+MM))+(-m*a*z))
+                    dX <- (((m*a*b*Y)+MM)+(p*k*(a*m*z*Y)))*(1-X)-r*X 
+                    dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))
+                    dm <- (R*(1-m/K)*m )+(-m*a*z)
                     return(list(c(dX, dY, dm)))
                 }
             )
@@ -205,10 +204,9 @@ server <- function(input, output) {
                 as.list(c(y, parameters)), 
                 {
                     z <- input(times)
-                    dX <- (((m+MM)*a*b*Y)+(p*k*(m*a*z*Y)))*(1-X)-r*X
-                    dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y))
-                    #dY <- a*c*X*(exp(-g*n)-Y)-((g*(1-(m+MM)/K)*Y)+(m*a*z*Y))+(MM*a*c*X*(exp(-g*n)-Y)) 
-                    dm <- ((R*(1-(m+MM)/K)*(m+MM))+(-m*a*z))
+                    dX <- (((m*a*b*Y)+MM)+(p*k*(a*m*z*Y)))*(1-X)-r*X 
+                    dY <- a*c*X*(exp(-g*n)-Y)-((g*Y)+(m*a*z*Y))
+                    dm <- (R*(1-m/K)*m )+(-m*a*z)
                     return(list(c(dX, dY, dm)))
                 }
             )

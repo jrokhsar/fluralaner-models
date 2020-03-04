@@ -1,0 +1,12 @@
+name: NewExternalBugs
+title: NewExternalBugs
+username:
+account: jrokh
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1898971
+bundleId: 2849039
+url: https://jrokh.shinyapps.io/NewExternalBugs/
+when: 1583286200.23063
+asMultiple: FALSE
+asStatic: FALSE
